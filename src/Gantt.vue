@@ -8,8 +8,13 @@
       </thead>
       <tbody>
         <tr v-for="task in flattenedTasks" :key="task.canonicalName.join('.')">
-          <th class="gantt-task-name" :style="{ paddingLeft: (0.5 + task.level * 1.5) + 'em' }">
-            <font-awesome-icon icon="minus" size="xs" v-if="!task.isLeaf"></font-awesome-icon>
+          <th
+            class="gantt-task-name"
+            :style="{ paddingLeft: (0.5 + task.level * 1.5) + 'em' }"
+            :data-task-canonical-name="task.canonicalName.join('.')"
+            @click="onClickTaskName"
+            >
+            <font-awesome-icon :icon="task.collapsed ? 'plus' : 'minus'" size="xs" v-if="!task.isLeaf"></font-awesome-icon>
             {{ task.name }}
           </th>
         </tr>
@@ -26,23 +31,47 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 library.add(faPlus, faMinus)
 
-function flattenTask (task) {
-  return task.subTasks
-    .reduce((a, b) => a.concat(flattenTask(b)), [task])
-}
-
 export default {
   props: {
     project: Project
   },
+  data () {
+    return {
+      collapsed: []
+    }
+  },
   computed: {
     flattenedTasks () {
-      return flattenTask(this.project)
+      return this.flattenTaskIter(this.project)
         .map(it => it.toJSON())
+        .map(it => {
+          it.collapsed = ~this.collapsed.indexOf(it.canonicalName.join('.'))
+          return it
+        })
     }
   },
   components: {
     'font-awesome-icon': FontAwesomeIcon
+  },
+  methods: {
+    flattenTaskIter (task) {
+      if (~this.collapsed.indexOf(task.canonicalName.join('.'))) {
+        return [task]
+      }
+      return task.subTasks
+        .reduce((a, b) => a.concat(this.flattenTaskIter(b)), [task])
+    },
+    onClickTaskName ({ target }) {
+      let cn = target.getAttribute('data-task-canonical-name')
+      let task = cn ? this.project.$(cn.split('.')) : this.project
+      if (task && !task.isLeaf) {
+        if (~this.collapsed.indexOf(cn)) {
+          this.collapsed = this.collapsed.filter(it => it !== cn)
+        } else {
+          this.collapsed = this.collapsed.concat(cn)
+        }
+      }
+    }
   }
 }
 </script>
