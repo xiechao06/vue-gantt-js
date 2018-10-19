@@ -1,19 +1,19 @@
 <template>
   <div id="app">
-    <gantt
+    <Gantt
       :project="project"
-    ></gantt>
+    ></Gantt>
   </div>
 </template>
 
 <script>
-import gantt from './Gantt.vue'
 import { Project } from 'gantt-engine'
+import Gantt from './Gantt'
 
 export default {
   name: 'app',
   components: {
-    gantt
+    Gantt
   },
   data () {
     return {

@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": false,
   "main": "dist/vue-gantt.common.js",
+  "module": "dist/vue-gantt.esm.js",
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "build-bundle": "vue-cli-service build --target lib --name vue-gantt ./src/index.js",
-    "prepublishOnly": "npm run build-bundle"
+    "build": "npm run clean && rollup -c",
+    "prepublishOnly": "npm run build",
+    "clean": "rimraf ./dist"
   },
   "dependencies": {
     "gantt-engine": "^1.4.1",
@@ -19,6 +20,10 @@
     "@vue/cli-plugin-eslint": "^3.0.1",
     "@vue/cli-service": "^3.0.1",
     "@vue/eslint-config-standard": "^3.0.4",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.66.6",
+    "rollup-plugin-buble": "^0.19.4",
+    "rollup-plugin-vue": "^4.3.2",
     "vue-template-compiler": "^2.5.17"
   },
   "files": [
