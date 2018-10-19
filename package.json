@@ -2,7 +2,7 @@
   "name": "vue-gantt-js",
   "version": "0.1.0",
   "private": false,
-  "main": "dist/vue-gantt-common.js",
+  "main": "dist/vue-gantt.common.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
