@@ -24,6 +24,11 @@ export default {
             .name('AA')
           )
         )
+        .addSubTask(t => t
+          .name('B')
+          .addSubTask('BA')
+          .addSubTask('BB')
+        )
         .addSubTask('C')
     }
   }
