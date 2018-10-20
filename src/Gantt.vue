@@ -61,8 +61,8 @@ export default {
       return task.subTasks
         .reduce((a, b) => a.concat(this.flattenTaskIter(b)), [task])
     },
-    onClickTaskName ({ target }) {
-      let cn = target.getAttribute('data-task-canonical-name')
+    onClickTaskName ({ currentTarget }) {
+      let cn = currentTarget.getAttribute('data-task-canonical-name')
       let task = cn ? this.project.$(cn.split('.')) : this.project
       if (task && !task.isLeaf) {
         if (~this.collapsed.indexOf(cn)) {

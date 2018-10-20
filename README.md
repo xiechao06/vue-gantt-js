@@ -19,3 +19,9 @@ yarn run build
 ```
 yarn run lint
 ```
+
+
+## References
+
+* http://www.treegrid.com/Gantt
+* https://www.bryntum.com/
