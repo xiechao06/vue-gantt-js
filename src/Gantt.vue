@@ -22,11 +22,11 @@
     <div class="gantt-task-panel-container">
       <div class="gantt-task-panel"  @wheel="onWheelTaskPanel">
         <time-ruler
-          :startFrom="startFrom"
           type="d/w"
           :offset="taskPanelOffset"
           ref="timeRuler"
           @getHeight="getTimeRulerHeight"
+          :startFrom="new Date(project.base())"
         >
         </time-ruler>
       </div>
@@ -45,13 +45,7 @@ library.add(faPlus, faMinus)
 
 export default {
   props: {
-    project: Project,
-    startFrom: {
-      type: [String, Date],
-      default () {
-        return new Date()
-      }
-    }
+    project: Project
   },
   data () {
     return {
