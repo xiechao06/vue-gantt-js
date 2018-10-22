@@ -10,6 +10,9 @@
 import { Project } from 'gantt-engine'
 import Gantt from './Gantt'
 
+localStorage.debug = 'gantt:*'
+
+// #ff0000
 export default {
   name: 'app',
   components: {
