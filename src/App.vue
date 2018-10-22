@@ -21,6 +21,7 @@ export default {
   data () {
     return {
       project: new Project('sample')
+        .base(new Date())
         .addSubTask(t => t
           .name('A')
           .addSubTask(t => t
