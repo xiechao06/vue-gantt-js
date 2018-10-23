@@ -65,7 +65,6 @@ import {
   startOfDay,
   differenceInDays
 } from 'date-fns'
-import Vue from 'vue'
 const debug = debug_('gantt:time-ruler')
 
 export default {
@@ -92,11 +91,19 @@ export default {
     this.containerWidth = outerWidth(this.$refs.container)
     debug('day cell width', this.dayCellWidth)
     debug('container width', this.containerWidth)
-    debug(this.firstDayInViewport)
-    debug(this.firstDayInWindow)
-    Vue.nextTick(() => {
+    this.$nextTick(() => {
       this.$emit('getHeight', outerHeight(this.$refs.container))
     })
+    debug('day cell cnt', this.dayCntInViewport)
+  },
+  updated () {
+    if (!isEqual(this._firstDayInViewport, this.firstDayInViewport)) {
+      this._firstDayInViewport = this.firstDayInViewport
+      this.$emit('change',
+        this._firstDayInViewport,
+        addDays(this._firstDayInViewport, this.dayCntInViewport)
+      )
+    }
   },
   computed: {
     dayCntInViewport () {
@@ -124,7 +131,7 @@ export default {
       return startOfMonth(this.firstDayInViewport)
     },
     firstDayInViewport () {
-      return addDays(this.startFrom, Math.round(this.offset / this.dayCellWidth))
+      return addDays(startOfDay(this.startFrom), Math.round(this.offset / this.dayCellWidth))
     },
     daysInWindow: function () {
       if (this.unmounted) {
@@ -153,7 +160,7 @@ export default {
 
 <style scoped>
 .time-ruler-container {
-  width: '100%';
+  flex: 1;
 }
 
 table.time-ruler {
