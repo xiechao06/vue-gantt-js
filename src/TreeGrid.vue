@@ -5,10 +5,11 @@
       }">
       <tbody>
         <tr
-          v-for="task in flattenedTasks"
+          v-for="task in tasks"
           :key="task.canonicalName.join('.')"
           :data-task-canonical-name="task.canonicalName.join('.')"
           @click="clickTaskName"
+          ref="row"
         >
           <th
             class="task-name"
@@ -30,13 +31,14 @@
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import outerHeight from './util/outer-height'
 
 library.add(faPlus, faMinus)
 
 export default {
   props: {
     project: Object,
-    collapsed: {
+    tasks: {
       type: Array,
       default: function () {
         return []
@@ -47,27 +49,13 @@ export default {
       default: 0
     }
   },
+  mounted () {
+    this.$nextTick(() => this.$emit('reportSwimLaneWidth', outerHeight(this.$refs.row[0])))
+  },
   components: {
     'font-awesome-icon': FontAwesomeIcon
   },
-  computed: {
-    flattenedTasks () {
-      return this._flattenTaskIter(this.project)
-        .map(it => it.toJSON())
-        .map(it => {
-          it.collapsed = ~this.collapsed.indexOf(it.canonicalName.join('.'))
-          return it
-        })
-    }
-  },
   methods: {
-    _flattenTaskIter (task) {
-      if (~this.collapsed.indexOf(task.canonicalName.join('.'))) {
-        return [task]
-      }
-      return task.subTasks
-        .reduce((a, b) => a.concat(this._flattenTaskIter(b)), [task])
-    },
     clickTaskName ({ currentTarget }) {
       let cn = currentTarget.getAttribute('data-task-canonical-name')
       let task = cn ? this.project.$(cn.split('.')) : this.project
@@ -95,6 +83,8 @@ tr {
   text-align: left;
   border-left: 1px solid #9E9E9E;
   border-bottom: 1px solid #9E9E9E;
+  box-sizing: border-box;
+  user-select: none;
 }
 
 th, td {

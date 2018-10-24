@@ -17,7 +17,9 @@
     "@fortawesome/vue-fontawesome": "^0.1.1",
     "date-fns": "^2.0.0-alpha.23",
     "gantt-engine": "^1.6.4",
-    "vue": "^2.5.17"
+    "konva": "^2.4.2",
+    "vue": "^2.5.17",
+    "vue-konva": "^1.0.6"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.1",

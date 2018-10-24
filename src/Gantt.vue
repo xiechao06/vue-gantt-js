@@ -4,7 +4,8 @@
       :project="project"
       :headerHeight="timeRulerHeight"
       @toggle="toggleTask"
-      :collapsed="collapsed"
+      :tasks="visibleTasks"
+      @reportSwimLaneWidth="reportSwimLaneWidth"
     ></tree-grid>
     <div class="gantt-task-panel-container">
       <div class="gantt-task-panel"  @wheel="onWheelTaskPanel">
@@ -21,6 +22,9 @@
           :project="project"
           :start="start"
           :end="end"
+          :collapsed="collapsed"
+          :swimLaneWidth="swimLaneWidth"
+          :tasks="visibleTasks"
         >
         </swim-pool>
       </div>
@@ -34,6 +38,10 @@ import SwimPool from './SwimPool'
 import TimeRuler from './TimeRuler'
 import TreeGrid from './TreeGrid'
 import debug_ from 'debug'
+import VueKonva from 'vue-konva'
+import Vue from 'vue'
+
+Vue.use(VueKonva)
 
 const debug = debug_('gantt:index')
 
@@ -46,6 +54,7 @@ export default {
       collapsed: [],
       taskPanelOffset: 0,
       timeRulerHeight: 0,
+      swimLaneWidth: 0,
       start: null,
       end: null
     }
@@ -55,7 +64,24 @@ export default {
     'swim-pool': SwimPool,
     'tree-grid': TreeGrid
   },
+  computed: {
+    visibleTasks () {
+      return this._flattenTaskIter(this.project)
+        .map(it => it.toJSON())
+        .map(it => {
+          it.collapsed = ~this.collapsed.indexOf(it.canonicalName.join('.'))
+          return it
+        })
+    }
+  },
   methods: {
+    _flattenTaskIter (task) {
+      if (~this.collapsed.indexOf(task.canonicalName.join('.'))) {
+        return [task]
+      }
+      return task.subTasks
+        .reduce((a, b) => a.concat(this._flattenTaskIter(b)), [task])
+    },
     onWheelTaskPanel (e) {
       this.taskPanelOffset += e.deltaX
     },
@@ -73,6 +99,10 @@ export default {
         this.collapsed = this.collapsed.concat(cn)
       }
       debug('collapsed tasks', this.collapsed)
+    },
+    reportSwimLaneWidth (swimLaneWidth) {
+      debug('swim lane width', swimLaneWidth)
+      this.swimLaneWidth = swimLaneWidth
     }
   }
 }

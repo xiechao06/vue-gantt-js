@@ -48,4 +48,8 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 }
+
+.gantt {
+  /* height: 10em; */
+}
 </style>
