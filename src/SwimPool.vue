@@ -3,7 +3,7 @@
     height: swimLaneWidth * tasks.length + 'px'
   }" ref='pool'>
     <v-stage
-      v-if="swimLaneWidth && timeUnitPixels" 
+      v-if="swimLaneWidth && timeUnitPixels"
       :config="{
         width: poolWidth,
         height: swimLaneWidth * tasks.length
@@ -108,6 +108,50 @@
           ></v-line>
         </v-group>
       </v-layer>
+      <v-layer name="dependency-lines">
+        <v-line
+          v-for="d in dependencies"
+          :key="d.key"
+          :config="(function () {
+            let { src, dest } = d
+            let points = [src.x, src.y]
+            let middleX = (src.x + dest.x) / 2
+            let middleY = (src.y + dest.y) / 2
+            if ((middleX - src.x) < 10) {
+              points = points.concat([
+                [middleX + 10, src.y],
+                [middleX + 10, middleY],
+                [middleX - 2 * 10, middleY],
+                [middleX - 2 * 10, dest.y],
+                [dest.x, dest.y]
+              ])
+            } else {
+              points = points.concat([
+                [middleX, src.y],
+                [middleX, dest.y],
+                [dest.x, dest.y]
+              ])
+            }
+            points = points.reduce((a, b) => a.concat(b), [])
+            return {
+              stroke: d.color,
+              strokeWidth: 2,
+              points
+            }
+          })()"
+        ></v-line>
+        <v-arrow
+          v-for="d in dependencies"
+          :key="d.key"
+          :config="(function () {
+            let { dest: { x, y } } = d
+            return {
+              fill: d.color,
+              points: [x, y]
+            }
+          })()"
+        ></v-arrow>
+      </v-layer>
     </v-stage>
   </div>
 </template>
@@ -118,6 +162,14 @@ import outerWidth from './util/outer-width'
 import debug_ from 'debug'
 
 const debug = debug_('gantt:swim-pool')
+
+let pallete = [
+  '#FF6F00',
+  '#9575CD',
+  '#4DB6AC',
+  '#795548',
+  '#607D8B'
+]
 
 export default {
   props: {
@@ -144,7 +196,6 @@ export default {
   mounted () {
     this.poolWidth = outerWidth(this.$refs.pool)
     debug('pool width', this.poolWidth)
-    console.log(this.tasks)
   },
   data () {
     return {
@@ -163,6 +214,42 @@ export default {
         y: (idx + 1) * this.swimLaneWidth - 1,
         offsetY: this.swimLaneWidth - this.laneMargin
       }
+    }
+  },
+  computed: {
+    dependencies () {
+      let ret = []
+      let cn2LaneNum = {}
+      for (let [idx, t] of Object.entries(this.tasks)) {
+        cn2LaneNum[t.canonicalName.join('.')] = Number(idx)
+      }
+      let { pixels, unit } = this.timeUnitPixels
+      let start = new Date(this.start).getTime()
+      for (let destTask of this.tasks) {
+        if (!destTask.dependsUpon || destTask.dependsUpon.length === 0) {
+          continue
+        }
+        let dest = {
+          x: Math.round((destTask.expectedToStartAt - start) * pixels / unit),
+          y: (cn2LaneNum[destTask.canonicalName.join('.')] + 0.5) * this.swimLaneWidth - 1
+        }
+        ret = ret.concat(destTask.dependsUpon.map((src, idx) => {
+          let srcTask = this.project.$(src)
+          return {
+            key: srcTask.canonicalName.join('.') + '-' + destTask.canonicalName.join('.'),
+            src: {
+              x: Math.round((srcTask.expectedToFinishAt - start) * pixels / unit),
+              y: (cn2LaneNum[srcTask.canonicalName.join('.')] + 0.5) * this.swimLaneWidth - 1
+            },
+            dest
+          }
+        }))
+      }
+      ret.forEach((d, idx) => {
+        d.color = pallete[idx]
+      })
+      debug('dependencies', ret)
+      return ret
     }
   }
 }
