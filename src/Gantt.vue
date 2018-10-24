@@ -16,6 +16,7 @@
           @getHeight="getTimeRulerHeight"
           :startFrom="new Date(project.base())"
           @change="timeRulerChange"
+          @reportTimeUnitPixels="reportTimeUnitPixels"
         >
         </time-ruler>
         <swim-pool
@@ -25,6 +26,7 @@
           :collapsed="collapsed"
           :swimLaneWidth="swimLaneWidth"
           :tasks="visibleTasks"
+          :timeUnitPixels="timeUnitPixels"
         >
         </swim-pool>
       </div>
@@ -56,7 +58,8 @@ export default {
       timeRulerHeight: 0,
       swimLaneWidth: 0,
       start: null,
-      end: null
+      end: null,
+      timeUnitPixels: null
     }
   },
   components: {
@@ -89,6 +92,10 @@ export default {
       this.timeRulerHeight = h
     },
     timeRulerChange (start, end) {
+      debug('start date', start)
+      debug('end date', end)
+      this.start = start
+      this.end = end
     },
     toggleTask (task) {
       let cn = task.canonicalName.join('.')
@@ -103,6 +110,9 @@ export default {
     reportSwimLaneWidth (swimLaneWidth) {
       debug('swim lane width', swimLaneWidth)
       this.swimLaneWidth = swimLaneWidth
+    },
+    reportTimeUnitPixels (unit, pixels) {
+      this.timeUnitPixels = { unit, pixels }
     }
   }
 }

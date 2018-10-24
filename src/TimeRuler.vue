@@ -65,6 +65,7 @@ import {
   startOfDay,
   differenceInDays
 } from 'date-fns'
+import timestring from 'timestring'
 const debug = debug_('gantt:time-ruler')
 
 export default {
@@ -93,6 +94,7 @@ export default {
     debug('container width', this.containerWidth)
     this.$nextTick(() => {
       this.$emit('getHeight', outerHeight(this.$refs.container))
+      this.$emit('reportTimeUnitPixels', timestring('1d', 'ms'), this.dayCellWidth)
     })
     debug('day cell cnt', this.dayCntInViewport)
   },
@@ -161,6 +163,7 @@ export default {
 <style scoped>
 .time-ruler-container {
   flex: 1;
+  border: 1px solid #9e9e9e;
 }
 
 table.time-ruler {
@@ -168,8 +171,6 @@ table.time-ruler {
   border-collapse: collapse;
   table-layout: fixed;
   position: relative;
-  border-top: 1px solid #E0E0E0;
-  border-left: 1px solid #E0E0E0;
 }
 
 .time-ruler td {

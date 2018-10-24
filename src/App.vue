@@ -26,14 +26,27 @@ export default {
           .name('A')
           .addSubTask(t => t
             .name('AA')
+            .duration('2d')
           )
         )
         .addSubTask(t => t
           .name('B')
-          .addSubTask('BA')
-          .addSubTask('BB')
+          .addSubTask(t => t
+            .name('BA')
+            .duration('3d')
+            .dependsUpon(['A', 'AA'])
+          )
+          .addSubTask(t => t
+            .name('BB')
+            .duration('1d')
+            .dependsUpon(['B', 'BA'])
+          )
         )
-        .addSubTask('C')
+        .addSubTask(t => t
+          .name('C')
+          .duration('5d')
+          .dependsUpon(['B'])
+        )
     }
   }
 }
