@@ -9,6 +9,7 @@
 <script>
 import { Project } from 'gantt-engine'
 import Gantt from './Gantt'
+import { addDays } from 'date-fns'
 
 localStorage.debug = 'gantt:*'
 
@@ -26,14 +27,30 @@ export default {
           .name('A')
           .addSubTask(t => t
             .name('AA')
+            .duration('2d')
+            .startAt(addDays(new Date(), 1))
+            .finishAt(addDays(new Date(), 5))
           )
         )
         .addSubTask(t => t
           .name('B')
-          .addSubTask('BA')
-          .addSubTask('BB')
+          .addSubTask(t => t
+            .name('BA')
+            .duration('3d')
+            .dependsUpon(['A', 'AA'])
+            .startAt(addDays(new Date(), 7))
+          )
+          .addSubTask(t => t
+            .name('BB')
+            .duration('1d')
+            .dependsUpon(['B', 'BA'])
+          )
         )
-        .addSubTask('C')
+        .addSubTask(t => t
+          .name('C')
+          .duration('5d')
+          .dependsUpon(['B'])
+        )
     }
   }
 }
@@ -47,5 +64,9 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+.gantt {
+  /* height: 10em; */
 }
 </style>
