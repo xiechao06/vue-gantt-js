@@ -18,7 +18,7 @@
             y: (idx + 1) * swimLaneWidth - 1,
             points: [0, 0, poolWidth, 0],
             stroke: '#EEEEEE',
-            strokeWidth: 1
+            strokeWidth: 1,
           }"
         >
         </v-line>
@@ -93,13 +93,20 @@
               })()"
             ></v-path>
           </v-group>
+          <v-line
+            name="task-progress-line"
+            :config="(function () {
+              let barWidth = Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit) 
+              return {
+                points: [0, 0, 0, swimLaneWidth - 2 * laneMargin],
+                x: task.finishAt ? barWidth : 0,
+                visible: !!(task.startAt || task.finishAt),
+                stroke: '#FB8C00',
+                strokeWidth: 2
+              }
+            })()"
+          ></v-line>
         </v-group>
-        <!-- <v-rect
-          v-for="(task, idx) in tasks"
-          :key="task.canonicalName.join('.')"
-          :config="taskBarConfig(task, idx)"
-        > -->
-        </v-rect>
       </v-layer>
     </v-stage>
   </div>
@@ -109,7 +116,6 @@
 
 import outerWidth from './util/outer-width'
 import debug_ from 'debug'
-import { isBefore, isAfter } from 'date-fns'
 
 const debug = debug_('gantt:swim-pool')
 
@@ -138,18 +144,11 @@ export default {
   mounted () {
     this.poolWidth = outerWidth(this.$refs.pool)
     debug('pool width', this.poolWidth)
+    console.log(this.tasks)
   },
   data () {
     return {
       poolWidth: 0
-    }
-  },
-  computed: {
-    tasksInWindow () {
-      return this.tasks.filter(it =>
-        isBefore(it.expectedToStartAt, this.end) &&
-        isAfter(it.expectedToFinishAt, this.start)
-      )
     }
   },
   methods: {
