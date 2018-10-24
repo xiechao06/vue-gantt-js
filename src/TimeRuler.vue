@@ -171,6 +171,7 @@ table.time-ruler {
   border-collapse: collapse;
   table-layout: fixed;
   position: relative;
+  user-select: none;
 }
 
 .time-ruler td {

@@ -28,6 +28,8 @@
           v-for="(task, idx) in tasks"
           :key="task.canonicalName.join('.')"
           :config="taskBarConfig(task, idx)"
+          @mouseover="mouseoverTaskBar"
+          @mouseout="mouseoutTaskBar"
         >
           <v-rect
             name="leaf task"
@@ -111,7 +113,7 @@
       <v-layer name="dependency-lines">
         <v-line
           v-for="d in dependencies"
-          :key="d.key"
+          :key="'line-' + d.key"
           :config="(function () {
             let { src, dest } = d
             let points = [src.x, src.y]
@@ -142,7 +144,7 @@
         ></v-line>
         <v-arrow
           v-for="d in dependencies"
-          :key="d.key"
+          :key="'arrow' + d.key"
           :config="(function () {
             let { dest: { x, y } } = d
             return {
@@ -212,8 +214,17 @@ export default {
       return {
         x,
         y: (idx + 1) * this.swimLaneWidth - 1,
-        offsetY: this.swimLaneWidth - this.laneMargin
+        offsetY: this.swimLaneWidth - this.laneMargin,
+        task: task.canonicalName.join('.')
       }
+    },
+    mouseoverTaskBar (c, evt) {
+      let task = this.project.$(evt.currentTarget.attrs.task.split('.'))
+      this.$emit('mouseoverTask', task, evt)
+    },
+    mouseoutTaskBar (c, evt) {
+      let task = this.project.$(evt.currentTarget.attrs.task.split('.'))
+      this.$emit('mouseoutTask', task, evt)
     }
   },
   computed: {
@@ -258,5 +269,6 @@ export default {
 <style scoped>
 .swim-pool {
   border: 1px solid #EEEEEE;
+  position: relative;
 }
 </style>

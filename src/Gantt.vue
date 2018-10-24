@@ -27,6 +27,9 @@
           :swimLaneWidth="swimLaneWidth"
           :tasks="visibleTasks"
           :timeUnitPixels="timeUnitPixels"
+          @mouseoverTask="mouseoverTask"
+          @mouseoutTask="mouseoutTask"
+          ref="swimPool"
         >
         </swim-pool>
       </div>
@@ -113,6 +116,23 @@ export default {
     },
     reportTimeUnitPixels (unit, pixels) {
       this.timeUnitPixels = { unit, pixels }
+    },
+    mouseoverTask (task, evt) {
+      debug('mouse over task', task, evt)
+      let $swimPoolEl = this.$refs.swimPool.$el
+      console.log($swimPoolEl)
+      this.$emit('mouseoverTask', task, {
+        x: evt.evt.clientX,
+        y: evt.evt.clientY
+      }, evt)
+    },
+    mouseoutTask (task, evt) {
+      debug('mouse out task', task, evt)
+      let $swimPoolEl = this.$refs.swimPool.$el
+      this.$emit('mouseoutTask', task, {
+        x: evt.evt.clientX + $swimPoolEl.offsetLeft,
+        y: evt.evt.clientY + $swimPoolEl.offsetTop
+      }, evt)
     }
   }
 }
