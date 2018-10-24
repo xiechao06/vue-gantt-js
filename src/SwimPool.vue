@@ -2,10 +2,13 @@
   <div class="swim-pool" :style="{
     height: swimLaneWidth * tasks.length + 'px'
   }" ref='pool'>
-    <v-stage :config="{
-      width: poolWidth,
-      height: swimLaneWidth * tasks.length
-    }">
+    <v-stage
+      v-if="swimLaneWidth && timeUnitPixels" 
+      :config="{
+        width: poolWidth,
+        height: swimLaneWidth * tasks.length
+      }"
+    >
       <v-layer name="swim-lanes">
         <v-line
           v-for="(task, idx) in tasks"
@@ -21,11 +24,81 @@
         </v-line>
       </v-layer>
       <v-layer name="task-bars">
-        <v-rect
+        <v-group
           v-for="(task, idx) in tasks"
           :key="task.canonicalName.join('.')"
           :config="taskBarConfig(task, idx)"
         >
+          <v-rect
+            name="leaf task"
+            v-if="task.isLeaf"
+            :config="(function () {
+              return {
+                height: swimLaneWidth - 2 * laneMargin,
+                fill: '#B3E5FC',
+                cornerRadius,
+                width: timeUnitPixels
+                  ? Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit) 
+                  : 0
+              }
+            })()"
+          >
+          </v-rect>
+          <v-group
+            name="non-leaf task"
+            v-else
+          >
+            <v-rect
+              :config="(function () {
+                return {
+                  height: swimLaneWidth - 2 * laneMargin,
+                  fill: '#A7FFEB',
+                  cornerRadius,
+                  width: timeUnitPixels
+                    ? Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit) 
+                    : 0
+                }
+              })()"
+            >
+            </v-rect>
+            <v-path
+              :config="(function () {
+                let barHeight = swimLaneWidth - 2 * laneMargin
+                return {
+                  fill: '#A7FFEB',
+                  data: `
+                    M 0 ${barHeight + cornerRadius}
+                    v ${-2 * cornerRadius}
+                    h ${cornerRadius}
+                    v ${cornerRadius}
+                    Z
+                  `
+                }
+              })()"
+            ></v-path>
+            <v-path
+              :config="(function () {
+                let barHeight = swimLaneWidth - 2 * laneMargin
+                let barWidth = Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit) 
+                return {
+                  fill: '#A7FFEB',
+                  data: `
+                    M ${barWidth} ${barHeight + cornerRadius}
+                    v ${-2 * cornerRadius}
+                    h ${-cornerRadius}
+                    v ${cornerRadius}
+                    Z
+                  `
+                }
+              })()"
+            ></v-path>
+          </v-group>
+        </v-group>
+        <!-- <v-rect
+          v-for="(task, idx) in tasks"
+          :key="task.canonicalName.join('.')"
+          :config="taskBarConfig(task, idx)"
+        > -->
         </v-rect>
       </v-layer>
     </v-stage>
@@ -52,7 +125,15 @@ export default {
       }
     },
     swimLaneWidth: Number,
-    timeUnitPixels: Object
+    timeUnitPixels: Object,
+    laneMargin: {
+      type: Number,
+      default: 8
+    },
+    cornerRadius: {
+      type: Number,
+      default: 8
+    }
   },
   mounted () {
     this.poolWidth = outerWidth(this.$refs.pool)
@@ -73,20 +154,15 @@ export default {
   },
   methods: {
     taskBarConfig (task, idx) {
-      let width = 0
       let x = 0
       if (this.timeUnitPixels) {
         let { unit, pixels } = this.timeUnitPixels
-        width = Math.round(task.duration * pixels / unit)
         x = Math.round((task.expectedToStartAt - new Date(this.start).getTime()) * pixels / unit)
       }
       return {
-        fill: 'lightgreen',
         x,
         y: (idx + 1) * this.swimLaneWidth - 1,
-        height: this.swimLaneWidth - 8,
-        offsetY: this.swimLaneWidth - 4,
-        width: width
+        offsetY: this.swimLaneWidth - this.laneMargin
       }
     }
   }

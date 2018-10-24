@@ -9,6 +9,7 @@
 <script>
 import { Project } from 'gantt-engine'
 import Gantt from './Gantt'
+import { addDays } from 'date-fns'
 
 localStorage.debug = 'gantt:*'
 
@@ -27,6 +28,8 @@ export default {
           .addSubTask(t => t
             .name('AA')
             .duration('2d')
+            .startAt(addDays(new Date(), 1))
+            .finishAt(addDays(new Date(), 5))
           )
         )
         .addSubTask(t => t
@@ -35,6 +38,7 @@ export default {
             .name('BA')
             .duration('3d')
             .dependsUpon(['A', 'AA'])
+            .startAt(addDays(new Date(), 7))
           )
           .addSubTask(t => t
             .name('BB')
