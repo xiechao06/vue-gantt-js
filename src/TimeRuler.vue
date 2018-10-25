@@ -163,6 +163,7 @@ export default {
 <style scoped>
 .time-ruler-container {
   flex: 1;
+  z-index: 500;
 }
 
 table.time-ruler {
