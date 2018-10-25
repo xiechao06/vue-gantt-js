@@ -10,7 +10,8 @@
     >
     </tree-grid>
     <div class="gantt-task-panel-container">
-      <div class="gantt-task-panel" @wheel="wheelTaskPanel">
+      <div class="gantt-task-panel" @wheel="wheelTaskPanel" :style="{
+      }">
         <time-ruler type="d/w" :offset="taskPanelOffset" ref="timeRuler" @getHeight="getTimeRulerHeight" :startFrom="new Date(project.base())" @change="timeRulerChange" @reportTimeUnitPixels="reportTimeUnitPixels">
         </time-ruler>
         <swim-pool :project="project" :start="start" :end="end" :collapsed="collapsed" :swimLaneWidth="swimLaneWidth" :tasks="visibleTasks" :timeUnitPixels="timeUnitPixels" @mouseoverTask="mouseoverTask" @mouseoutTask="mouseoutTask" ref="swimPool">
@@ -138,8 +139,11 @@ export default {
 
 .gantt-task-panel-container {
   flex: 7;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow: hidden;
+}
+
+.gantt-task-panel {
   border: 1px solid #e5e5e5;
+  overflow: hidden;
 }
 </style>

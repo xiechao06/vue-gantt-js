@@ -6,9 +6,7 @@
     <div class="table-container" :style="{
       height: tableContainerHeight + 'px'
     }">
-      <table ref="table" @wheel="wheel" :style="{
-        top: '0px'
-      }">
+      <table ref="table" @wheel="wheel">
         <tbody>
           <tr v-for="task in tasks" :key="task.canonicalName.join('.')" :data-task-canonical-name="task.canonicalName.join('.')" @click="clickTaskName" ref="row">
             <th class="task-name" :style="{ paddingLeft: (0.5 + task.level * 1.5) + 'em' }">
@@ -18,6 +16,14 @@
           </tr>
         </tbody>
       </table>
+      <div class='v-scroll-bar' v-if="!!vScrollBarVisible" :style="{
+        height: tableContainerHeight && tableHeight
+          ? (tableContainerHeight / tableHeight) * tableContainerHeight + 'px'
+          : '0px',
+        top: tableContainerHeight && tableHeight
+          ? offsetTop * tableContainerHeight / tableHeight + 'px'
+          : '0px'
+      }"></div>
     </div>
   </div>
 </template>
@@ -50,9 +56,9 @@ export default {
   },
   data () {
     return {
-      wheeling: false,
       offsetTop: 0,
       swimLaneWidth: 0,
+      vScrollBarVisible: 0
     }
   },
   mounted () {
@@ -60,11 +66,21 @@ export default {
       this.swimLaneWidth = outerHeight(this.$refs.row[0]) + 1
       this.$emit('reportSwimLaneWidth', this.swimLaneWidth)
     })
+    this.tryHideVScrollBar()
   },
   components: {
     'font-awesome-icon': FontAwesomeIcon
   },
   methods: {
+    tryHideVScrollBar () {
+      this.raf = window.requestAnimationFrame(() => {
+        this.tryHideVScrollBar()
+      })
+      if (this.vScrollBarVisible <= 0) {
+        return
+      }
+      --this.vScrollBarVisible
+    },
     clickTaskName ({ currentTarget }) {
       let cn = currentTarget.getAttribute('data-task-canonical-name')
       let task = cn ? this.project.$(cn.split('.')) : this.project
@@ -72,17 +88,11 @@ export default {
         this.$emit('toggle', task)
       }
     },
-    stopWheeling: throttle(function stopWheeling () {
-      setTimeout(() => {
-        this.wheeling = false
-      }, 200)
-    }, 200),
     wheel: function wheel (evt) {
       if (this.maxOffsetTop <= 0) {
         return
       }
-      this.wheeling = true
-      this.stopWheeling()
+      this.vScrollBarVisible = 20
 
       // go down will generate a negative deltaY, 
       // and I want go down to give more offset
@@ -120,13 +130,13 @@ export default {
   border-collapse: collapse;
   width: 100%;
   position: relative;
-  box-sizing: border-box;
 }
 
 .table-container {
   border: 1px solid #e0e0e0;
   overflow: hidden;
   box-sizing: border-box;
+  position: relative;
 }
 
 tr {
@@ -141,10 +151,18 @@ tr {
 th,
 td {
   padding-right: 0.5em;
-  box-sizing: border-box;
 }
 
 .task-name {
   text-align: left;
 }
+
+.v-scroll-bar {
+  background-color: rgba(160, 160, 160, 0.7);
+  border-radius: 5px;
+  left: 0;
+  position: absolute;
+  width: 10px;
+}
+
 </style>
