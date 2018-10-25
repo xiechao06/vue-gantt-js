@@ -185,7 +185,7 @@ export default {
       }
       return {
         x,
-        y: (idx + 1) * this.swimLaneWidth - 1,
+        y: (idx + 1) * this.swimLaneWidth,
         offsetY: this.swimLaneWidth - this.laneMargin,
         task: task.canonicalName.join('.')
       }
