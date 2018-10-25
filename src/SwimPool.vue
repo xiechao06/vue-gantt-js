@@ -1,7 +1,7 @@
 <template>
   <div class="swim-pool" :style="{
-    // TODO: use div to draw tree grid
-    height: swimLaneWidth * tasks.length - 2 + 'px'
+    height: swimLaneWidth * tasks.length - 2 + 'px',
+    top: -offsetTop + 'px'
   }" ref='pool'>
     <v-stage v-if="swimLaneWidth && timeUnitPixels" :config="{
         width: poolWidth,
@@ -161,16 +161,25 @@ export default {
     timeUnitPixels: Object,
     laneMargin: {
       type: Number,
-      default: 8
+      default: 0
     },
     cornerRadius: {
       type: Number,
       default: 8
+    },
+    offsetTop: {
+      type: Number,
+      default: 0
     }
   },
   mounted () {
     this.poolWidth = outerWidth(this.$refs.pool)
     debug('pool width', this.poolWidth)
+  },
+  beforeUpdate () {
+    if (!this.laneMargin) {
+      this.laneMargin = Math.round(this.swimLaneWidth / 3.6)
+    }
   },
   data () {
     return {
@@ -240,7 +249,6 @@ export default {
 
 <style scoped>
 .swim-pool {
-  border: 1px solid #eeeeee;
   position: relative;
   box-sizing: border-box;
 }

@@ -1,6 +1,12 @@
 <template>
   <div id="app">
-    <Gantt :project="project" @mouseoverTask="mouseoverTask" @mouseoutTask="mouseoutTask"></Gantt>
+    <Gantt
+      :project="project"
+      @mouseoverTask="mouseoverTask"
+      @mouseoutTask="mouseoutTask"
+      @startTask="startTask"
+      @finishTask="finishTask"
+    ></Gantt>
     <div class="modal" :style="modalStyle" v-if="hoveredTask" ref="modal">
       <h3>{{ hoveredTask.name() }}</h3>
       <ul>
@@ -20,7 +26,11 @@
 <script>
 import { Project } from 'gantt-engine'
 import Gantt from './Gantt'
-import { addDays, format } from 'date-fns'
+import { addDays, format, subDays } from 'date-fns'
+import VueSweetalert2 from 'vue-sweetalert2'
+import Vue from 'vue'
+
+Vue.use(VueSweetalert2)
 
 localStorage.debug = 'gantt:*'
 
@@ -31,17 +41,18 @@ export default {
     Gantt
   },
   data () {
+    let base = subDays(new Date(), 15)
     return {
       format,
       project: new Project('sample')
-        .base(new Date())
+        .base(base)
         .addSubTask(t => t
           .name('A')
           .addSubTask(t => t
             .name('AA')
             .duration('2d')
-            .startAt(addDays(new Date(), 1))
-            .finishAt(addDays(new Date(), 5))
+            .startAt(addDays(base, 1))
+            .finishAt(addDays(base, 5))
           )
         )
         .addSubTask(t => t
@@ -50,7 +61,7 @@ export default {
             .name('BA')
             .duration('3d')
             .dependsUpon(['A', 'AA'])
-            .startAt(addDays(new Date(), 7))
+            .startAt(addDays(base, 7))
           )
           .addSubTask(t => t
             .name('BB')
@@ -74,6 +85,32 @@ export default {
     mouseoutTask () {
       this.hoveredTask = null
       this.mouseoverTaskPos = null
+    },
+    startTask (task) {
+      this.$swal(
+        `Are you sure to start task ${task.name()}?`,
+        '',
+        'question'
+      )
+        .then(({ value }) => {
+          if (value) {
+            task.startAt(new Date())
+            this.project = new Project().fromJSON(this.project.toJSON())
+          }
+        })
+    },
+    finishTask (task) {
+      this.$swal(
+        `Are you sure to finish task ${task.name()}?`,
+        '',
+        'question'
+      )
+        .then(({ value }) => {
+          if (value) {
+            task.finishAt(new Date())
+            this.project = new Project().fromJSON(this.project.toJSON())
+          }
+        })
     }
   },
   computed: {
@@ -82,7 +119,6 @@ export default {
         return {}
       }
       let { x, y } = this.mouseoverTaskPos
-      console.log(x, y)
       return {
         display: this.hoveredTask ? 'block' : 'none',
         top: y - 220 + 'px',
@@ -105,7 +141,7 @@ export default {
 }
 
 .gantt {
-  height: 10em;
+  height: calc(15em - 10px);
 }
 
 .modal {

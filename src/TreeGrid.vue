@@ -3,19 +3,44 @@
     <div :style="{
       height: headerHeight + 'px'
     }"></div>
-    <div class="table-container" :style="{
+    <div class="container" :style="{
       height: tableContainerHeight + 'px'
     }">
-      <table ref="table" @wheel="wheel">
-        <tbody>
-          <tr v-for="task in tasks" :key="task.canonicalName.join('.')" :data-task-canonical-name="task.canonicalName.join('.')" @click="clickTaskName" ref="row">
-            <th class="task-name" :style="{ paddingLeft: (0.5 + task.level * 1.5) + 'em' }">
-              <font-awesome-icon :icon="task.collapsed ? 'plus' : 'minus'" size="xs" v-if="!task.isLeaf"></font-awesome-icon>
-              {{ task.name() }}
-            </th>
-          </tr>
-        </tbody>
-      </table>
+      <div ref="list" class="list" @wheel="wheel" :style="{
+        top: -offsetTop + 'px'
+      }">
+        <div
+          class="task-item"
+          v-for="task in tasks"
+          :key="task.canonicalName.join('.')"
+          :data-task-canonical-name="task.canonicalName.join('.')"
+          @click="clickTaskName"
+          ref="item"
+        >
+          <div class="task-name" :style="{ paddingLeft: (0.5 + task.level * 1.5) + 'em' }">
+            <font-awesome-icon
+              :icon="task.collapsed ? 'plus' : 'minus'" size="xs" v-if="!task.isLeaf"
+            ></font-awesome-icon>
+            {{ task.name() }}
+          </div>
+          <div class="ops">
+            <font-awesome-icon
+              icon="play-circle" size="sm"
+              :style="{color: '#43A047'}"
+              v-if="~task.ops.indexOf('start')"
+              :data-task-canonical-name="task.canonicalName.join('.')"
+              @click="clickStart"
+            ></font-awesome-icon>
+            <font-awesome-icon
+              icon="stop-circle" size="sm"
+              :style="{color: '#F4511E'}"
+              v-if="~task.ops.indexOf('finish')"
+              :data-task-canonical-name="task.canonicalName.join('.')"
+              @click="clickFinish"
+            ></font-awesome-icon>
+          </div>
+        </div>
+      </div>
       <div class='v-scroll-bar' v-if="!!vScrollBarVisible" :style="{
         height: tableContainerHeight && tableHeight
           ? (tableContainerHeight / tableHeight) * tableContainerHeight + 'px'
@@ -30,15 +55,14 @@
 
 <script>
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faMinus, faPlayCircle, faStopCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import outerHeight from './util/outer-height'
 import debug_ from 'debug'
-import throttle from 'lodash.throttle'
 
 const debug = debug_('gantt:tree-grid') // eslint-disable-line no-unused-vars
 
-library.add(faPlus, faMinus)
+library.add(faPlus, faMinus, faPlayCircle, faStopCircle)
 
 export default {
   props: {
@@ -63,7 +87,7 @@ export default {
   },
   mounted () {
     this.$nextTick(() => {
-      this.swimLaneWidth = outerHeight(this.$refs.row[0]) + 1
+      this.swimLaneWidth = outerHeight(this.$refs.item[0])
       this.$emit('reportSwimLaneWidth', this.swimLaneWidth)
     })
     this.tryHideVScrollBar()
@@ -94,7 +118,7 @@ export default {
       }
       this.vScrollBarVisible = 20
 
-      // go down will generate a negative deltaY, 
+      // go down will generate a negative deltaY,
       // and I want go down to give more offset
       this.offsetTop -= evt.deltaY
       // reach the top
@@ -104,7 +128,21 @@ export default {
       if (this.offsetTop > this.maxOffsetTop) {
         this.offsetTop = this.maxOffsetTop
       }
-      this.$emit('scroll', Math.round(this.offsetTop / this.swimLaneWidth))
+      this.$emit('scroll', this.offsetTop)
+    },
+    clickStart (evt) {
+      let cn = evt.currentTarget.getAttribute('data-task-canonical-name')
+      let task = cn ? this.project.$(cn.split('.')) : this.project
+      if (task && task.isLeaf) {
+        this.$emit('startTask', task)
+      }
+    },
+    clickFinish (evt) {
+      let cn = evt.currentTarget.getAttribute('data-task-canonical-name')
+      let task = cn ? this.project.$(cn.split('.')) : this.project
+      if (task && task.isLeaf) {
+        this.$emit('finishTask', task)
+      }
     }
   },
   computed: {
@@ -115,7 +153,7 @@ export default {
       return Math.min(outerHeight(this.$el) - this.headerHeight, this.tableHeight)
     },
     tableHeight () {
-      return outerHeight(this.$refs.table)
+      return outerHeight(this.$refs.list)
     },
     maxOffsetTop () {
       return this.tableHeight - this.tableContainerHeight
@@ -125,36 +163,38 @@ export default {
 </script>
 
 <style scoped>
-.tree-grid table {
-  table-layout: fixed;
-  border-collapse: collapse;
-  width: 100%;
-  position: relative;
-}
-
-.table-container {
+.container {
   border: 1px solid #e0e0e0;
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
 }
 
-tr {
+.list {
+  width: 100%;
+  position: relative;
+}
+
+.task-item {
   height: 2em;
   line-height: 2em;
   text-align: left;
   border-bottom: 1px solid #f5f5f5;
   box-sizing: border-box;
   user-select: none;
-}
-
-th,
-td {
   padding-right: 0.5em;
+  display: flex
 }
 
 .task-name {
   text-align: left;
+  flex: 1;
+}
+
+.ops {
+  flex: 0;
+  display: flex;
+  align-items: center;
 }
 
 .v-scroll-bar {

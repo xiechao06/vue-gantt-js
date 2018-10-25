@@ -7,15 +7,31 @@
       :tasks="visibleTasks"
       @reportSwimLaneWidth="reportSwimLaneWidth"
       @scroll="scrollTreeGrid"
+      @startTask="startTask"
+      @finishTask="finishTask"
     >
     </tree-grid>
     <div class="gantt-task-panel-container">
-      <div class="gantt-task-panel" @wheel="wheelTaskPanel" :style="{
-      }">
+      <div class="gantt-task-panel" @wheel="wheelTaskPanel">
         <time-ruler type="d/w" :offset="taskPanelOffset" ref="timeRuler" @getHeight="getTimeRulerHeight" :startFrom="new Date(project.base())" @change="timeRulerChange" @reportTimeUnitPixels="reportTimeUnitPixels">
         </time-ruler>
-        <swim-pool :project="project" :start="start" :end="end" :collapsed="collapsed" :swimLaneWidth="swimLaneWidth" :tasks="visibleTasks" :timeUnitPixels="timeUnitPixels" @mouseoverTask="mouseoverTask" @mouseoutTask="mouseoutTask" ref="swimPool">
-        </swim-pool>
+        <div class="swim-pool-container" :style="{
+          height: (totalHeight - timeRulerHeight) + 'px'
+        }">
+          <swim-pool
+            :project="project"
+            :start="start"
+            :end="end"
+            :collapsed="collapsed"
+            :swimLaneWidth="swimLaneWidth"
+            :tasks="visibleTasks"
+            :timeUnitPixels="timeUnitPixels"
+            @mouseoverTask="mouseoverTask"
+            @mouseoutTask="mouseoutTask"
+            :offsetTop="treeGridOffsetTop"
+            ref="swimPool">
+          </swim-pool>
+        </div>
       </div>
     </div>
   </div>
@@ -29,6 +45,7 @@ import TreeGrid from './TreeGrid'
 import debug_ from 'debug'
 import VueKonva from 'vue-konva'
 import Vue from 'vue'
+import outerHeight from './util/outer-height'
 
 Vue.use(VueKonva)
 
@@ -47,8 +64,12 @@ export default {
       start: null,
       end: null,
       timeUnitPixels: null,
-      topTaskIdx: 0
+      treeGridOffsetTop: 0,
+      totalHeight: 0
     }
+  },
+  mounted () {
+    this.totalHeight = outerHeight(this.$el)
   },
   components: {
     'time-ruler': TimeRuler,
@@ -62,7 +83,6 @@ export default {
           it.collapsed = ~this.collapsed.indexOf(it.canonicalName.join('.'))
           return it
         })
-        .slice(this.topTaskIdx)
     }
   },
   methods: {
@@ -75,7 +95,7 @@ export default {
     },
     wheelTaskPanel (e) {
       this.taskPanelOffset += e.deltaX
-      this.taskPanelOffset += e.deltaY
+      this.taskPanelOffset -= e.deltaY
     },
     getTimeRulerHeight (h) {
       this.timeRulerHeight = h
@@ -117,8 +137,14 @@ export default {
         y: evt.evt.clientY
       }, evt)
     },
-    scrollTreeGrid (topTaskIdx) {
-      this.topTaskIdx = topTaskIdx
+    scrollTreeGrid (offsetTop) {
+      this.treeGridOffsetTop = offsetTop
+    },
+    startTask (...args) {
+      this.$emit('startTask', ...args)
+    },
+    finishTask (...args) {
+      this.$emit('finishTask', ...args)
     }
   }
 }
@@ -140,10 +166,16 @@ export default {
 .gantt-task-panel-container {
   flex: 7;
   overflow: hidden;
+  border-bottom: 1px solid #E0E0E0;
 }
 
 .gantt-task-panel {
   border: 1px solid #e5e5e5;
   overflow: hidden;
+}
+
+.swim-pool-container {
+  overflow: hidden;
+  box-sizing: border-box;
 }
 </style>
