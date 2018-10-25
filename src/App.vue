@@ -41,7 +41,7 @@ export default {
     Gantt
   },
   data () {
-    let base = subDays(new Date(), 15)
+    let base = subDays(new Date(), 20)
     return {
       format,
       project: new Project('sample')
@@ -141,7 +141,7 @@ export default {
 }
 
 .gantt {
-  height: calc(18em - 10px);
+  height: calc(15em - 10px);
 }
 
 .modal {
