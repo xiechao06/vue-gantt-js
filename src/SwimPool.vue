@@ -1,6 +1,6 @@
 <template>
   <div class="swim-pool" :style="{
-    height: swimLaneWidth * tasks.length - 2 + 'px',
+    height: swimPoolHeight + 'px',
     top: -offsetTop + 'px'
   }" ref='pool'>
     <v-stage v-if="swimLaneWidth && timeUnitPixels" :config="{
@@ -127,6 +127,11 @@
             }
           })()"></v-arrow>
       </v-layer>
+      <v-layer name="progress-line">
+        <v-line
+          :config="progressLineConfig"
+        ></v-line>
+      </v-layer>
     </v-stage>
   </div>
 </template>
@@ -159,10 +164,6 @@ export default {
     },
     swimLaneWidth: Number,
     timeUnitPixels: Object,
-    laneMargin: {
-      type: Number,
-      default: 0
-    },
     cornerRadius: {
       type: Number,
       default: 8
@@ -183,7 +184,8 @@ export default {
   },
   data () {
     return {
-      poolWidth: 0
+      poolWidth: 0,
+      laneMargin: 0
     }
   },
   methods: {
@@ -210,6 +212,45 @@ export default {
     }
   },
   computed: {
+    swimPoolHeight () {
+      return this.swimLaneWidth * this.tasks.length - 2
+    },
+    progressLineConfig () {
+      let progressList = this.tasks.map(t => {
+        if (t.progress !== void 0) {
+          return t.expectedToStartAt + t.progress * t.duration()
+        }
+      }).filter(it => it)
+      let newestProgress = Math.max(...progressList)
+      let start = new Date(this.start).getTime()
+
+      let { pixels, unit } = this.timeUnitPixels
+      let points = [
+        (newestProgress - start) / unit * pixels, 0
+      ]
+
+      for (let i = 0; i < this.tasks.length; ++i) {
+        let t = this.tasks[i]
+        if (t.progress !== void 0) {
+          points = points.concat([
+            points[0], i * this.swimLaneWidth + this.laneMargin,
+            (t.expectedToStartAt + t.progress * t.duration() - start) / unit * pixels, (i + 0.5) * this.swimLaneWidth,
+            points[0], (i + 1) * this.swimLaneWidth - this.laneMargin
+          ])
+        }
+      }
+
+      points = points.concat([
+        points[0], this.swimPoolHeight
+      ])
+
+      return {
+        stroke: '#512DA8',
+        strokeWidth: 1,
+        dash: [3, 3],
+        points
+      }
+    },
     dependencies () {
       let ret = []
       let cn2LaneNum = {}
