@@ -141,7 +141,7 @@ export default {
 }
 
 .gantt {
-  height: calc(15em - 10px);
+  height: calc(18em - 10px);
 }
 
 .modal {
