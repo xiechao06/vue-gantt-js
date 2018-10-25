@@ -127,9 +127,12 @@
             }
           })()"></v-arrow>
       </v-layer>
-      <v-layer name="progress-line">
+      <v-layer name="lines">
         <v-line
           :config="progressLineConfig"
+        ></v-line>
+        <v-line
+          :config="nowLineConfig"
         ></v-line>
       </v-layer>
     </v-stage>
@@ -226,7 +229,7 @@ export default {
 
       let { pixels, unit } = this.timeUnitPixels
       let points = [
-        (newestProgress - start) / unit * pixels, 0
+        (newestProgress - start) * pixels / unit, 0
       ]
 
       for (let i = 0; i < this.tasks.length; ++i) {
@@ -234,7 +237,7 @@ export default {
         if (t.progress !== void 0) {
           points = points.concat([
             points[0], i * this.swimLaneWidth + this.laneMargin,
-            (t.expectedToStartAt + t.progress * t.duration() - start) / unit * pixels, (i + 0.5) * this.swimLaneWidth,
+            (t.expectedToStartAt + t.progress * t.duration() - start) * pixels / unit, (i + 0.5) * this.swimLaneWidth,
             points[0], (i + 1) * this.swimLaneWidth - this.laneMargin
           ])
         }
@@ -249,6 +252,19 @@ export default {
         strokeWidth: 1,
         dash: [3, 3],
         points
+      }
+    },
+    nowLineConfig () {
+      let { pixels, unit } = this.timeUnitPixels
+      let x = (new Date().getTime() - new Date(this.start).getTime()) * pixels / unit
+      return {
+        stroke: '#FF4043',
+        strokeWidth: 1,
+        dash: [3, 3],
+        points: [
+          x, 0,
+          x, this.swimPoolHeight
+        ]
       }
     },
     dependencies () {
