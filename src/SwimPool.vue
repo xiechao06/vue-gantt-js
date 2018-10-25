@@ -19,9 +19,9 @@
       </v-layer>
       <v-layer name="task-bars">
         <v-group v-for="(task, idx) in tasks" :key="task.canonicalName.join('.')" :config="taskBarConfig(task, idx)" @mouseover="mouseoverTaskBar" @mouseout="mouseoutTaskBar">
-          <v-rect 
-            name="leaf task" 
-            v-if="task.isLeaf && task.duration() > 2 * laneMargin * timeUnitPixels.unit / timeUnitPixels.pixels" 
+          <v-rect
+            name="leaf task"
+            v-if="task.isLeaf && task.duration() > 2 * laneMargin * timeUnitPixels.unit / timeUnitPixels.pixels"
             :config="(function () {
               return {
                 height: swimLaneWidth - 2 * laneMargin,
