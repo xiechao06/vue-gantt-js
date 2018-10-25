@@ -104,9 +104,9 @@ export default {
   position: relative;
 }
 
-/* .gantt {
+.gantt {
   height: 10em;
-} */
+}
 
 .modal {
   display: block;

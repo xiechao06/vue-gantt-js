@@ -6,31 +6,15 @@
       @toggle="toggleTask"
       :tasks="visibleTasks"
       @reportSwimLaneWidth="reportSwimLaneWidth"
-    ></tree-grid>
+      @scroll="scrollTreeGrid"
+    >
+    </tree-grid>
     <div class="gantt-task-panel-container">
-      <div class="gantt-task-panel"  @wheel="onWheelTaskPanel">
-        <time-ruler
-          type="d/w"
-          :offset="taskPanelOffset"
-          ref="timeRuler"
-          @getHeight="getTimeRulerHeight"
-          :startFrom="new Date(project.base())"
-          @change="timeRulerChange"
-          @reportTimeUnitPixels="reportTimeUnitPixels"
-        >
+      <div class="gantt-task-panel" @wheel="wheelTaskPanel" :style="{
+      }">
+        <time-ruler type="d/w" :offset="taskPanelOffset" ref="timeRuler" @getHeight="getTimeRulerHeight" :startFrom="new Date(project.base())" @change="timeRulerChange" @reportTimeUnitPixels="reportTimeUnitPixels">
         </time-ruler>
-        <swim-pool
-          :project="project"
-          :start="start"
-          :end="end"
-          :collapsed="collapsed"
-          :swimLaneWidth="swimLaneWidth"
-          :tasks="visibleTasks"
-          :timeUnitPixels="timeUnitPixels"
-          @mouseoverTask="mouseoverTask"
-          @mouseoutTask="mouseoutTask"
-          ref="swimPool"
-        >
+        <swim-pool :project="project" :start="start" :end="end" :collapsed="collapsed" :swimLaneWidth="swimLaneWidth" :tasks="visibleTasks" :timeUnitPixels="timeUnitPixels" @mouseoverTask="mouseoverTask" @mouseoutTask="mouseoutTask" ref="swimPool">
         </swim-pool>
       </div>
     </div>
@@ -62,7 +46,8 @@ export default {
       swimLaneWidth: 0,
       start: null,
       end: null,
-      timeUnitPixels: null
+      timeUnitPixels: null,
+      topTaskIdx: 0
     }
   },
   components: {
@@ -77,6 +62,7 @@ export default {
           it.collapsed = ~this.collapsed.indexOf(it.canonicalName.join('.'))
           return it
         })
+        .slice(this.topTaskIdx)
     }
   },
   methods: {
@@ -87,8 +73,9 @@ export default {
       return task.subTasks
         .reduce((a, b) => a.concat(this._flattenTaskIter(b)), [task])
     },
-    onWheelTaskPanel (e) {
+    wheelTaskPanel (e) {
       this.taskPanelOffset += e.deltaX
+      this.taskPanelOffset += e.deltaY
     },
     getTimeRulerHeight (h) {
       this.timeRulerHeight = h
@@ -129,18 +116,21 @@ export default {
         x: evt.evt.clientX,
         y: evt.evt.clientY
       }, evt)
+    },
+    scrollTreeGrid (topTaskIdx) {
+      this.topTaskIdx = topTaskIdx
     }
   }
 }
 </script>
 
 <style scoped>
-
 .gantt {
   display: flex;
   flex-wrap: nowrap;
   width: 100%;
   font-size: 12px;
+  overflow-y: hidden;
 }
 
 .gantt .tree-grid {
@@ -149,8 +139,11 @@ export default {
 
 .gantt-task-panel-container {
   flex: 7;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
+.gantt-task-panel {
+  border: 1px solid #e5e5e5;
+  overflow: hidden;
+}
 </style>

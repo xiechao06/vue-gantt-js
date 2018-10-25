@@ -1,6 +1,7 @@
 <template>
   <div class="swim-pool" :style="{
-    height: swimLaneWidth * tasks.length + 'px'
+    // TODO: use div to draw tree grid
+    height: swimLaneWidth * tasks.length - 2 + 'px'
   }" ref='pool'>
     <v-stage v-if="swimLaneWidth && timeUnitPixels" :config="{
         width: poolWidth,
@@ -185,7 +186,7 @@ export default {
       }
       return {
         x,
-        y: (idx + 1) * this.swimLaneWidth - 1,
+        y: (idx + 1) * this.swimLaneWidth,
         offsetY: this.swimLaneWidth - this.laneMargin,
         task: task.canonicalName.join('.')
       }
@@ -241,5 +242,6 @@ export default {
 .swim-pool {
   border: 1px solid #eeeeee;
   position: relative;
+  box-sizing: border-box;
 }
 </style>
