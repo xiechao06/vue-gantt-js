@@ -3671,9 +3671,9 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
-gantt-engine@^1.6.12:
-  version "1.6.12"
-  resolved "https://registry.yarnpkg.com/gantt-engine/-/gantt-engine-1.6.12.tgz#cd18f41aafd6e8c8b310d981e34ac789b53ccd98"
+gantt-engine@^1.6.13:
+  version "1.6.13"
+  resolved "https://registry.yarnpkg.com/gantt-engine/-/gantt-engine-1.6.13.tgz#63fd77b158fb929927fe33421e06b5f59ec12ef2"
   dependencies:
     "@babel/preset-env" "^7.1.0"
     array-starts-with "^1.0.2"
