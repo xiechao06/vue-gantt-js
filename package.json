@@ -16,7 +16,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.4.1",
     "@fortawesome/vue-fontawesome": "^0.1.1",
     "date-fns": "^2.0.0-alpha.23",
-    "gantt-engine": "^1.6.12",
+    "gantt-engine": "^1.6.13",
     "konva": "^2.4.2",
     "random-color": "^1.0.1",
     "timestring": "^5.0.1",

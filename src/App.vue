@@ -1,10 +1,6 @@
 <template>
   <div id="app">
-    <Gantt
-      :project="project"
-      @mouseoverTask="mouseoverTask"
-      @mouseoutTask="mouseoutTask"
-    ></Gantt>
+    <Gantt :project="project" @mouseoverTask="mouseoverTask" @mouseoutTask="mouseoutTask"></Gantt>
     <div class="modal" :style="modalStyle" v-if="hoveredTask" ref="modal">
       <h3>{{ hoveredTask.name() }}</h3>
       <ul>
@@ -58,7 +54,6 @@ export default {
           )
           .addSubTask(t => t
             .name('BB')
-            .duration('1d')
             .dependsUpon(['B', 'BA'])
           )
         )
@@ -109,9 +104,9 @@ export default {
   position: relative;
 }
 
-.gantt {
-  /* height: 10em; */
-}
+/* .gantt {
+  height: 10em;
+} */
 
 .modal {
   display: block;
@@ -121,7 +116,7 @@ export default {
   color: white;
   padding: 5px;
   border-radius: 4px;
-  width: 200px;
+  width: 300px;
   max-height: 150px;
   height: 150px;
   box-sizing: border-box;
@@ -132,5 +127,4 @@ export default {
   padding-left: 0%;
   text-align: left;
 }
-
 </style>

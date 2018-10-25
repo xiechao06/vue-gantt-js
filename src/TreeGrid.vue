@@ -4,22 +4,10 @@
       marginTop: headerHeight + 'px'
       }">
       <tbody>
-        <tr
-          v-for="task in tasks"
-          :key="task.canonicalName.join('.')"
-          :data-task-canonical-name="task.canonicalName.join('.')"
-          @click="clickTaskName"
-          ref="row"
-        >
-          <th
-            class="task-name"
-            :style="{ paddingLeft: (0.5 + task.level * 1.5) + 'em' }"
-            >
-            <font-awesome-icon
-              :icon="task.collapsed ? 'plus' : 'minus'"
-              size="xs"
-              v-if="!task.isLeaf"></font-awesome-icon>
-            {{ task.name }}
+        <tr v-for="task in tasks" :key="task.canonicalName.join('.')" :data-task-canonical-name="task.canonicalName.join('.')" @click="clickTaskName" ref="row">
+          <th class="task-name" :style="{ paddingLeft: (0.5 + task.level * 1.5) + 'em' }">
+            <font-awesome-icon :icon="task.collapsed ? 'plus' : 'minus'" size="xs" v-if="!task.isLeaf"></font-awesome-icon>
+            {{ task.name() }}
           </th>
         </tr>
       </tbody>
@@ -68,12 +56,11 @@ export default {
 </script>
 
 <style scoped>
-
 .tree-grid table {
   table-layout: fixed;
   border-collapse: collapse;
-  border-top: 1px solid #9E9E9E;
-  border-right: 1px solid #9E9E9E;
+  border-top: 1px solid #9e9e9e;
+  border-right: 1px solid #9e9e9e;
   width: 100%;
 }
 
@@ -81,14 +68,15 @@ tr {
   height: 2em;
   line-height: 2em;
   text-align: left;
-  border-left: 1px solid #9E9E9E;
-  border-bottom: 1px solid #9E9E9E;
+  border-left: 1px solid #9e9e9e;
+  border-bottom: 1px solid #9e9e9e;
   box-sizing: border-box;
   user-select: none;
 }
 
-th, td {
-  padding-right: .5em;
+th,
+td {
+  padding-right: 0.5em;
 }
 
 .task-name {

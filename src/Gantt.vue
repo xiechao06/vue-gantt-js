@@ -73,7 +73,6 @@ export default {
   computed: {
     visibleTasks () {
       return this._flattenTaskIter(this.project)
-        .map(it => it.toJSON())
         .map(it => {
           it.collapsed = ~this.collapsed.indexOf(it.canonicalName.join('.'))
           return it
@@ -119,8 +118,6 @@ export default {
     },
     mouseoverTask (task, evt) {
       debug('mouse over task', task, evt)
-      let $swimPoolEl = this.$refs.swimPool.$el
-      console.log($swimPoolEl)
       this.$emit('mouseoverTask', task, {
         x: evt.evt.clientX,
         y: evt.evt.clientY
@@ -128,10 +125,9 @@ export default {
     },
     mouseoutTask (task, evt) {
       debug('mouse out task', task, evt)
-      let $swimPoolEl = this.$refs.swimPool.$el
       this.$emit('mouseoutTask', task, {
-        x: evt.evt.clientX + $swimPoolEl.offsetLeft,
-        y: evt.evt.clientY + $swimPoolEl.offsetTop
+        x: evt.evt.clientX,
+        y: evt.evt.clientY
       }, evt)
     }
   }

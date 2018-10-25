@@ -2,69 +2,55 @@
   <div class="swim-pool" :style="{
     height: swimLaneWidth * tasks.length + 'px'
   }" ref='pool'>
-    <v-stage
-      v-if="swimLaneWidth && timeUnitPixels"
-      :config="{
+    <v-stage v-if="swimLaneWidth && timeUnitPixels" :config="{
         width: poolWidth,
         height: swimLaneWidth * tasks.length
-      }"
-    >
+      }">
       <v-layer name="swim-lanes">
-        <v-line
-          v-for="(task, idx) in tasks"
-          :key="task.canonicalName.join('.')"
-          :config="{
+        <v-line v-for="(task, idx) in tasks" :key="task.canonicalName.join('.')" :config="{
             x: 0,
             y: (idx + 1) * swimLaneWidth - 1,
             points: [0, 0, poolWidth, 0],
             stroke: '#EEEEEE',
             strokeWidth: 1,
-          }"
-        >
+          }">
         </v-line>
       </v-layer>
       <v-layer name="task-bars">
-        <v-group
-          v-for="(task, idx) in tasks"
-          :key="task.canonicalName.join('.')"
-          :config="taskBarConfig(task, idx)"
-          @mouseover="mouseoverTaskBar"
-          @mouseout="mouseoutTaskBar"
-        >
-          <v-rect
-            name="leaf task"
-            v-if="task.isLeaf"
-            :config="(function () {
+        <v-group v-for="(task, idx) in tasks" :key="task.canonicalName.join('.')" :config="taskBarConfig(task, idx)" @mouseover="mouseoverTaskBar" @mouseout="mouseoutTaskBar">
+          <v-rect name="leaf task" v-if="task.isLeaf && task.duration() > 0" :config="(function () {
               return {
                 height: swimLaneWidth - 2 * laneMargin,
                 fill: '#B3E5FC',
                 cornerRadius,
                 width: timeUnitPixels
-                  ? Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit) 
+                  ? Math.round(task.duration() * timeUnitPixels.pixels / timeUnitPixels.unit)
                   : 0
               }
-            })()"
-          >
+            })()">
           </v-rect>
-          <v-group
-            name="non-leaf task"
-            v-else
-          >
-            <v-rect
-              :config="(function () {
+          <v-rect v-else-if="task.isLeaf" :config="{
+              height: swimLaneWidth - 2 * laneMargin,
+              width: swimLaneWidth - 2 * laneMargin,
+              offsetX: laneMargin,
+              offsetY: laneMargin,
+              y: laneMargin,
+              fill: '#B3E5FC',
+              rotation: 45
+            }"></v-rect>
+          <v-group name="non-leaf task" v-else>
+            <v-rect :config="(function () {
                 return {
                   height: swimLaneWidth - 2 * laneMargin,
                   fill: '#A7FFEB',
                   cornerRadius,
                   width: timeUnitPixels
-                    ? Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit) 
+                    ? Math.round(task.duration() * timeUnitPixels.pixels / timeUnitPixels.unit)
                     : 0
                 }
-              })()"
-            >
+              })()">
             </v-rect>
-            <v-path
-              :config="(function () {
+            <v-path :config="(function () {
                 let barHeight = swimLaneWidth - 2 * laneMargin
                 return {
                   fill: '#A7FFEB',
@@ -76,12 +62,10 @@
                     Z
                   `
                 }
-              })()"
-            ></v-path>
-            <v-path
-              :config="(function () {
+              })()"></v-path>
+            <v-path :config="(function () {
                 let barHeight = swimLaneWidth - 2 * laneMargin
-                let barWidth = Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit) 
+                let barWidth = Math.round(task.duration() * timeUnitPixels.pixels / timeUnitPixels.unit)
                 return {
                   fill: '#A7FFEB',
                   data: `
@@ -92,29 +76,22 @@
                     Z
                   `
                 }
-              })()"
-            ></v-path>
+              })()"></v-path>
           </v-group>
-          <v-line
-            name="task-progress-line"
-            :config="(function () {
-              let barWidth = Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit) 
+          <v-line name="task-progress-line" :config="(function () {
+              let barWidth = Math.round(task.duration() * timeUnitPixels.pixels / timeUnitPixels.unit)
               return {
                 points: [0, 0, 0, swimLaneWidth - 2 * laneMargin],
-                x: task.finishAt ? barWidth : 0,
-                visible: !!(task.startAt || task.finishAt),
+                x: task.finishAt() ? barWidth : 0,
+                visible: !!(task.startAt() || task.finishAt()),
                 stroke: '#FB8C00',
                 strokeWidth: 2
               }
-            })()"
-          ></v-line>
+            })()"></v-line>
         </v-group>
       </v-layer>
       <v-layer name="dependency-lines">
-        <v-line
-          v-for="d in dependencies"
-          :key="'line-' + d.key"
-          :config="(function () {
+        <v-line v-for="d in dependencies" :key="'line-' + d.key" :config="(function () {
             let { src, dest } = d
             let points = [src.x, src.y]
             let middleX = (src.x + dest.x) / 2
@@ -140,19 +117,14 @@
               strokeWidth: 2,
               points
             }
-          })()"
-        ></v-line>
-        <v-arrow
-          v-for="d in dependencies"
-          :key="'arrow' + d.key"
-          :config="(function () {
+          })()"></v-line>
+        <v-arrow v-for="d in dependencies" :key="'arrow' + d.key" :config="(function () {
             let { dest: { x, y } } = d
             return {
               fill: d.color,
               points: [x, y]
             }
-          })()"
-        ></v-arrow>
+          })()"></v-arrow>
       </v-layer>
     </v-stage>
   </div>
@@ -237,15 +209,14 @@ export default {
       let { pixels, unit } = this.timeUnitPixels
       let start = new Date(this.start).getTime()
       for (let destTask of this.tasks) {
-        if (!destTask.dependsUpon || destTask.dependsUpon.length === 0) {
+        if (!destTask.dependsUpon() || destTask.dependsUpon().length === 0) {
           continue
         }
         let dest = {
           x: Math.round((destTask.expectedToStartAt - start) * pixels / unit),
           y: (cn2LaneNum[destTask.canonicalName.join('.')] + 0.5) * this.swimLaneWidth - 1
         }
-        ret = ret.concat(destTask.dependsUpon.map((src, idx) => {
-          let srcTask = this.project.$(src)
+        ret = ret.concat(destTask.dependsUpon().map((srcTask, idx) => {
           return {
             key: srcTask.canonicalName.join('.') + '-' + destTask.canonicalName.join('.'),
             src: {
@@ -268,7 +239,7 @@ export default {
 
 <style scoped>
 .swim-pool {
-  border: 1px solid #EEEEEE;
+  border: 1px solid #eeeeee;
   position: relative;
 }
 </style>
