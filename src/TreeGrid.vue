@@ -6,7 +6,7 @@
     <div class="container" :style="{
       height: tableContainerHeight + 'px'
     }">
-      <div ref="list" class="list" @wheel="wheel" :style="{
+      <div ref="list" class="list" @wheel.prevent="wheel" :style="{
         top: -offsetTop + 'px'
       }">
         <div
@@ -21,7 +21,7 @@
             <font-awesome-icon
               :icon="task.collapsed ? 'plus' : 'minus'" size="xs" v-if="!task.isLeaf"
             ></font-awesome-icon>
-            {{ task.name() }}
+            {{ task.name }}
           </div>
           <div class="ops">
             <font-awesome-icon

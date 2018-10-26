@@ -26,7 +26,7 @@
 <script>
 import { Project } from 'gantt-engine'
 import Gantt from './Gantt'
-import { addDays, format, subDays } from 'date-fns'
+import { format, subDays } from 'date-fns'
 import VueSweetalert2 from 'vue-sweetalert2'
 import Vue from 'vue'
 
@@ -47,31 +47,106 @@ export default {
       project: new Project('sample')
         .base(base)
         .addSubTask(t => t
-          .name('A')
+          .name('隐蔽工程')
           .addSubTask(t => t
-            .name('AA')
+            .name('开工')
+            .duration('1d')
+          )
+          .addSubTask(t => t
+            .name('放样')
+            .duration('1d')
+            .dependsUpon('~')
+          )
+          .addSubTask(t => t
+            .name('拆除水电')
+            .dependsUpon('~')
+            .duration('6d')
+          )
+          .addSubTask(t => t
+            .name('工程验收')
+            .dependsUpon('~')
             .duration('2d')
-            .startAt(addDays(base, 1))
-            .finishAt(addDays(base, 5))
           )
         )
         .addSubTask(t => t
-          .name('B')
+          .name('木瓦工程')
+          .dependsUpon('~')
           .addSubTask(t => t
-            .name('BA')
+            .name('木瓦施工')
+            .duration('18d')
+          )
+          .addSubTask(t => t
+            .name('工程验收')
+            .dependsUpon(['木瓦工程', '木瓦施工'])
+            .duration('2d')
+          )
+          .addSubTask(t => t
+            .name('上传中期款凭证')
+            .duration('7d')
+          )
+        )
+        .addSubTask(t => t
+          .name('油漆工程')
+          .dependsUpon('~')
+          .addSubTask(t => t
+            .name('油漆施工')
+            .duration('18d')
+          )
+          .addSubTask(t => t
+            .name('工程验收')
+            .dependsUpon('~')
+            .duration('2d')
+          )
+        )
+        .addSubTask(t => t
+          .name('主材安装')
+          .dependsUpon('~')
+          .addSubTask(t => t
+            .name('集成吊顶安装')
+            .duration('5d')
+          )
+          .addSubTask(t => t
+            .name('木门橱柜安装')
+            .dependsUpon('~')
+            .duration('5d')
+          )
+          .addSubTask(t => t
+            .name('地板安装')
+            .dependsUpon('~')
+            .duration('5d')
+          )
+          .addSubTask(t => t
+            .name('灯具卫浴安装')
+            .dependsUpon('~')
+            .duration('5d')
+          )
+          .addSubTask(t => t
+            .name('窗帘墙纸安装')
+            .dependsUpon('~')
+            .duration('5d')
+          )
+          .addSubTask(t => t
+            .name('保洁')
+            .dependsUpon('~')
             .duration('3d')
-            .dependsUpon(['A', 'AA'])
-            .startAt(addDays(base, 7))
           )
           .addSubTask(t => t
-            .name('BB')
-            .dependsUpon(['B', 'BA'])
+            .name('上传尾款凭证')
+            .duration('3d')
           )
         )
         .addSubTask(t => t
-          .name('C')
-          .duration('5d')
-          .dependsUpon(['B'])
+          .name('家具家电安装')
+          .dependsUpon('~')
+          .addSubTask(t => t
+            .name('家电安装')
+            .duration('3d')
+          )
+          .addSubTask(t => t
+            .name('竣工验收')
+            .dependsUpon('~')
+            .duration('2d')
+          )
         ),
       hoveredTask: null,
       mouseoverTaskPos: null
@@ -95,7 +170,7 @@ export default {
         .then(({ value }) => {
           if (value) {
             task.startAt(new Date())
-            this.project = new Project().fromJSON(this.project.toJSON())
+            this.project = this.project.clone()
           }
         })
     },
@@ -108,7 +183,7 @@ export default {
         .then(({ value }) => {
           if (value) {
             task.finishAt(new Date())
-            this.project = new Project().fromJSON(this.project.toJSON())
+            this.project = this.project.clone()
           }
         })
     }
@@ -141,7 +216,7 @@ export default {
 }
 
 .gantt {
-  height: calc(15em - 10px);
+  height: calc(45em - 10px);
 }
 
 .modal {

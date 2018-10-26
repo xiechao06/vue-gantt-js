@@ -21,14 +21,14 @@
         <v-group v-for="(task, idx) in tasks" :key="task.canonicalName.join('.')" :config="taskBarConfig(task, idx)" @mouseover="mouseoverTaskBar" @mouseout="mouseoutTaskBar">
           <v-rect
             name="leaf task"
-            v-if="task.isLeaf && task.duration() > 2 * laneMargin * timeUnitPixels.unit / timeUnitPixels.pixels"
+            v-if="task.isLeaf && task.duration > 2 * laneMargin * timeUnitPixels.unit / timeUnitPixels.pixels"
             :config="(function () {
               return {
                 height: swimLaneWidth - 2 * laneMargin,
                 fill: '#B3E5FC',
                 cornerRadius,
                 width: timeUnitPixels
-                  ? Math.round(task.duration() * timeUnitPixels.pixels / timeUnitPixels.unit)
+                  ? Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit)
                   : 0
               }
             })()">
@@ -49,7 +49,7 @@
                   fill: '#A7FFEB',
                   cornerRadius,
                   width: timeUnitPixels
-                    ? Math.round(task.duration() * timeUnitPixels.pixels / timeUnitPixels.unit)
+                    ? Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit)
                     : 0
                 }
               })()">
@@ -69,7 +69,7 @@
               })()"></v-path>
             <v-path :config="(function () {
                 let barHeight = swimLaneWidth - 2 * laneMargin
-                let barWidth = Math.round(task.duration() * timeUnitPixels.pixels / timeUnitPixels.unit)
+                let barWidth = Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit)
                 return {
                   fill: '#A7FFEB',
                   data: `
@@ -83,11 +83,11 @@
               })()"></v-path>
           </v-group>
           <v-line name="task-progress-line" :config="(function () {
-              let barWidth = Math.round(task.duration() * timeUnitPixels.pixels / timeUnitPixels.unit)
+              let barWidth = Math.round(task.duration * timeUnitPixels.pixels / timeUnitPixels.unit)
               return {
                 points: [0, 0, 0, swimLaneWidth - 2 * laneMargin],
-                x: task.finishAt() ? barWidth : 0,
-                visible: !!(task.startAt() || task.finishAt()),
+                x: task.finishAt ? barWidth : 0,
+                visible: !!(task.startAt || task.finishAt),
                 stroke: '#FB8C00',
                 strokeWidth: 2
               }
@@ -95,7 +95,10 @@
         </v-group>
       </v-layer>
       <v-layer name="dependency-lines">
-        <v-line v-for="d in dependencies" :key="'line-' + d.key" :config="(function () {
+        <v-line
+          v-for="d in dependencies"
+          :key="'line-' + d.key"
+          :config="(function () {
             let { src, dest } = d
             let points = [src.x, src.y]
             let middleX = (src.x + dest.x) / 2
@@ -270,6 +273,13 @@ export default {
         ]
       }
     },
+    taskMap () {
+      let d = {}
+      for (let t of this.tasks) {
+        d[t.canonicalName.join('.')] = t
+      }
+      return d
+    },
     dependencies () {
       let ret = []
       let cn2LaneNum = {}
@@ -279,16 +289,17 @@ export default {
       let { pixels, unit } = this.timeUnitPixels
       let start = new Date(this.start).getTime()
       for (let destTask of this.tasks) {
-        if (!destTask.dependsUpon() || destTask.dependsUpon().length === 0) {
+        if (!destTask.plainDependsUpon || destTask.plainDependsUpon.length === 0) {
           continue
         }
         let dest = {
           x: Math.round((destTask.expectedToStartAt - start) * pixels / unit),
           y: (cn2LaneNum[destTask.canonicalName.join('.')] + 0.5) * this.swimLaneWidth - 1
         }
-        ret = ret.concat(destTask.dependsUpon().map((srcTask, idx) => {
+        ret = ret.concat(destTask.plainDependsUpon.map((srcTaskCn, idx) => {
+          let srcTask = this.taskMap[srcTaskCn.join('.')]
           return {
-            key: srcTask.canonicalName.join('.') + '-' + destTask.canonicalName.join('.'),
+            key: srcTaskCn.join('.') + '-' + destTask.canonicalName.join('.'),
             src: {
               x: Math.round((srcTask.expectedToFinishAt - start) * pixels / unit),
               y: (cn2LaneNum[srcTask.canonicalName.join('.')] + 0.5) * this.swimLaneWidth - 1
@@ -298,7 +309,7 @@ export default {
         }))
       }
       ret.forEach((d, idx) => {
-        d.color = pallete[idx]
+        d.color = pallete[idx % pallete.length]
       })
       debug('dependencies', ret)
       return ret

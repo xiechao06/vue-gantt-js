@@ -12,7 +12,7 @@
     >
     </tree-grid>
     <div class="gantt-task-panel-container">
-      <div class="gantt-task-panel" @wheel="wheelTaskPanel">
+      <div class="gantt-task-panel" @wheel.prevent="wheelTaskPanel">
         <time-ruler type="d/w" :offset="taskPanelOffset" ref="timeRuler" @getHeight="getTimeRulerHeight" :startFrom="new Date(project.base())" @change="timeRulerChange" @reportTimeUnitPixels="reportTimeUnitPixels">
         </time-ruler>
         <div class="swim-pool-container" :style="{
@@ -78,11 +78,14 @@ export default {
   },
   computed: {
     visibleTasks () {
-      return this._flattenTaskIter(this.project)
+      return this._flattenTaskIter(this.projectJSON)
         .map(it => {
           it.collapsed = ~this.collapsed.indexOf(it.canonicalName.join('.'))
           return it
         })
+    },
+    projectJSON () {
+      return this.project.toJSON()
     }
   },
   methods: {
@@ -103,6 +106,10 @@ export default {
     timeRulerChange (start, end) {
       debug('start date', start)
       debug('end date', end)
+      const day = 24 * 3600 * 1000
+      if (this.start && Math.floor(this.start.getTime() / day) === start.getTime() / day) {
+        return
+      }
       this.start = start
       this.end = end
     },
