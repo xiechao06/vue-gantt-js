@@ -3,7 +3,7 @@
 ## Install
 
 ```
-npm install vue-gantt-enge
+npm install vue-gantt-js
 ```
 
 ## Project setup
