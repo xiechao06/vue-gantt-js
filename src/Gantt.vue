@@ -39,9 +39,9 @@
 
 <script>
 import { Project } from 'gantt-engine'
-import SwimPool from './SwimPool'
-import TimeRuler from './TimeRuler'
-import TreeGrid from './TreeGrid'
+import SwimPool from './SwimPool.vue'
+import TimeRuler from './TimeRuler.vue'
+import TreeGrid from './TreeGrid.vue'
 import debug_ from 'debug'
 import VueKonva from 'vue-konva'
 import Vue from 'vue'

@@ -121,12 +121,12 @@ export default {
       let d = firstDayInWindow
       let lastDayInViewport = addDays(this.firstDayInViewport, this.dayCntInViewport)
 
-      return Array.from(function * () {
-        while (isAfter(lastDayInViewport, d)) {
-          yield d
-          d = addMonths(d, 1)
-        }
-      }())
+      let ret = []
+      while (isAfter(lastDayInViewport, d)) {
+        ret.push(d)
+        d = addMonths(d, 1)
+      }
+      return ret
     },
     firstDayInWindow () {
       // this first in the month where view port first day belongs
@@ -142,19 +142,19 @@ export default {
       let { firstDayInWindow } = this
       let lastDayInWindow = addMonths((this.monthsInWindow[this.monthsInWindow.length - 1]), 1)
       let today = startOfDay(new Date())
-      return Array.from(function * () {
-        for (let d = firstDayInWindow; isAfter(lastDayInWindow, d); d = addDays(d, 1)) {
-          let dayInWeek = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()]
-          yield {
-            key: d.getTime(),
-            dayInMonth: d.getDate(),
-            dayInWeek,
-            lastDayInWeek: dayInWeek === '六',
-            weekIdx: getWeek(d),
-            isToday: isEqual(today, d)
-          }
-        }
-      }())
+      let ret = []
+      for (let d = firstDayInWindow; isAfter(lastDayInWindow, d); d = addDays(d, 1)) {
+        let dayInWeek = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()]
+        ret.push({
+          key: d.getTime(),
+          dayInMonth: d.getDate(),
+          dayInWeek,
+          lastDayInWeek: dayInWeek === '六',
+          weekIdx: getWeek(d),
+          isToday: isEqual(today, d)
+        })
+      }
+      return ret
     }
   }
 }
