@@ -77,11 +77,12 @@ export default {
           )
           .addSubTask(t => t
             .name('工程验收')
-            .dependsUpon(['木瓦工程', '木瓦施工'])
+            .dependsUpon('~')
             .duration('2d')
           )
           .addSubTask(t => t
             .name('上传中期款凭证')
+            .dependsUpon('~')
             .duration('7d')
           )
         )
@@ -132,6 +133,7 @@ export default {
           )
           .addSubTask(t => t
             .name('上传尾款凭证')
+            .dependsUpon('~')
             .duration('3d')
           )
         )
@@ -216,7 +218,7 @@ export default {
 }
 
 .gantt {
-  height: calc(45em - 10px);
+  height: calc(55em - 10px);
 }
 
 .modal {
