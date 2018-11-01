@@ -1,5 +1,11 @@
 # vue-gantt-js
 
+## Install
+
+```
+npm install vue-gantt-enge
+```
+
 ## Project setup
 ```
 yarn install
